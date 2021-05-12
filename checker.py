@@ -58,9 +58,11 @@ def main():
             data_table = pd.DataFrame()
         time_now = datetime.datetime.now()
         c_time = datetime.datetime.strftime(time_now, '%H:%M:%S')
-        c_date = datetime.datetime.strftime(time_now, '%d/%m/%Y')
+        c_date = datetime.datetime.strftime(time_now, '%d.%m.%Y')
         user_object = vk.users.get(user_ids=u_id, fields='last_seen')
         u_time = user_object[0]['last_seen']['time']
+        u_time_pretty = datetime.datetime.fromtimestamp(int(u_time))
+        u_time_pretty = datetime.datetime.strftime(u_time_pretty, '%d.%m.%Y %H:%M:%S')
         platform_id = user_object[0]['last_seen']['platform']
         u_name = user_object[0]['first_name'] + ' ' + user_object[0]['last_name']
         platform = platforms[platform_id]
@@ -71,7 +73,8 @@ def main():
             current_user.online = is_online
         new_data_table = pd.DataFrame({'user_id': [u_id, ], 'date': [c_date, ], 'time': [c_time, ],
                                        'online': [is_online, ], 'platform': [platform, ],
-                                       'last_seen': [u_time, ], 'timestamp': [datetime.datetime.timestamp(time_now), ]})
+                                       'last_seen': [u_time, ], 'timestamp': [datetime.datetime.timestamp(time_now), ],
+                                       'last_pretty':[u_time_pretty, ]})
         data_table = data_table.append(new_data_table, ignore_index=True)
         data_table.to_csv('./data/%s.csv' % (str(u_id)))
     time_now = datetime.datetime.now()
