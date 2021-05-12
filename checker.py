@@ -1,4 +1,3 @@
-import config
 import vk_api
 import time
 import pandas as pd
@@ -17,6 +16,7 @@ class VkUser:
 
 
 def create_users():
+    import config
     global user_list
     for c_id in config.Ids:
         user_list.append(VkUser(c_id))
@@ -29,7 +29,19 @@ def auth_handler():
     return key, remember_device
 
 
+def create_config():
+    if not os.path.exists('data'):
+        os.makedirs('data')
+    
+    if not os.path.exists('config.py'):
+        with open('config.py', 'w') as f:
+            f.write("""EPS = 10\nIds = []\nTOKEN = ''""")
+        print('Config file created, please insert token and user ids')
+        raise SystemExit
+
+
 def main():
+    import config
     global user_list
     time_fix = time.time()
     vk_session = vk_api.VkApi(token=config.TOKEN)
@@ -45,7 +57,7 @@ def main():
         else:
             data_table = pd.DataFrame()
         time_now = datetime.datetime.now()
-        c_time = datetime.datetime.strftime(time_now, '%H:%M')
+        c_time = datetime.datetime.strftime(time_now, '%H:%M:%S')
         c_date = datetime.datetime.strftime(time_now, '%d/%m/%Y')
         user_object = vk.users.get(user_ids=u_id, fields='last_seen')
         u_time = user_object[0]['last_seen']['time']
@@ -63,13 +75,14 @@ def main():
         data_table = data_table.append(new_data_table, ignore_index=True)
         data_table.to_csv('./data/%s.csv' % (str(u_id)))
     time_now = datetime.datetime.now()
-    print('[DONE] %s' % (datetime.datetime.strftime(time_now, '%H:%M %d/%m/%Y')))
+    print('[DONE] %s' % (datetime.datetime.strftime(time_now, '%H:%M:%S %d/%m/%Y')))
     time_fix -= time.time()
     time.sleep(config.EPS + time_fix if abs(time_fix) < config.EPS else config.EPS)
 
 
 if __name__ == "__main__":
     user_list = []
+    create_config()
     create_users()
     while True:
         try:
